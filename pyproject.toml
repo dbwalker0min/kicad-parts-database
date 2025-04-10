@@ -1,0 +1,11 @@
+[project]
+name = "kicad-parts-database"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.15.2",
+    "hexdump>=3.3",
+    "sqlmodel>=0.0.24",
+]

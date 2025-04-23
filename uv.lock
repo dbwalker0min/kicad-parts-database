@@ -66,6 +66,11 @@ dependencies = [
     { name = "sqlmodel" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "alembic" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.15.2" },
@@ -73,6 +78,9 @@ requires-dist = [
     { name = "psycopg2", specifier = ">=2.9.10" },
     { name = "sqlmodel", specifier = ">=0.0.24" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "alembic", specifier = ">=1.15.2" }]
 
 [[package]]
 name = "mako"

@@ -10,3 +10,11 @@ dependencies = [
     "psycopg2>=2.9.10",
     "sqlmodel>=0.0.24",
 ]
+
+[tool.uv.workspace]
+members = ["kicad-parts-database"]
+
+[dependency-groups]
+dev = [
+    "alembic>=1.15.2",
+]

@@ -1,6 +1,7 @@
 
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, Computed, create_engine
-from kicad_parts_database.kicad_db.db_definitions import KiCadTableDefinition, KiCadField, KiCadProperty, KiCadPropertySpec, metadata
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.schema import CreateTable
+from kicad_parts_database.kicad_db.db_definitions import KiCadTableDefinition, KiCadField, KiCadProperty, KiCadPropertySpec, metadata, build_tables
 
 # See https://docs.kicad.org/master/en/eeschema/eeschema_advanced.html#database-libraries for more information on the database libraries.
 
@@ -22,11 +23,8 @@ The libraries defined are:
 """
 
 
-class BaseTable(KiCadTableDefinition):
+class BaseTable(KiCadTableDefinition, key='part_number'):
     """Base class for KiCad table definitions."""
-
-    # This is the prefix for generating the part number
-    prefix: str = 'TBD'
 
     sequence_number = Column(Integer, autoincrement=True, primary_key=True, index=True,
                              comment="Sequence number of the component")
@@ -48,6 +46,8 @@ class BaseTable(KiCadTableDefinition):
                               description="URL to the datasheet of the component")
     keywords = KiCadProperty(KiCadPropertySpec.KEYWORDS,
                              description="Type of the component. Formatted as a path, like typeA/typeB")
+    exclude_from_bom = KiCadProperty(
+        KiCadPropertySpec.EXCLUDE_FROM_BOM, description="Exclude from BOM")
     step_model = KiCadField(
         'Step Model', description="Step model for the component")
     package_type = KiCadField('Package Type', visible_in_chooser=True, visible_on_add=False, show_name=False, inherit_properties=True,
@@ -63,8 +63,7 @@ class BaseTable(KiCadTableDefinition):
         String, default=None, comment="Manufacturer's part number of the component")
 
 
-class Resistors(BaseTable, table=True):
-    prefix = 'RES'
+class Resistors(BaseTable, table=True, computed_vars={'prefix': 'RES'}):
 
     """Class for Resistors table definition."""
     power_rating = KiCadField(
@@ -74,8 +73,8 @@ class Resistors(BaseTable, table=True):
 
 
 if __name__ == "__main__":
-    r = Resistors()
-    tt = r.generate_table()
-
-    engine = create_engine('postgresql+psycopg2://kicad-user:QAiaw8do7NHa4PvDakdR@eplant-eng.info:5432/kicad_part_database', echo=True)
-    metadata.create_all(engine)
+    tabs = build_tables()
+    print(type(tabs[0]))
+    print(metadata.tables)
+    #engine = create_engine('postgresql+psycopg2://kicad-user:QAiaw8do7NHa4PvDakdR@eplant-eng.info:5432/kicad_part_database', echo=True)
+    #metadata.create_all(engine)

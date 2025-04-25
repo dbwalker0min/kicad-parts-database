@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Any
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, MetaData, Boolean
 from sqlalchemy.schema import CreateTable
 from enum import StrEnum
@@ -23,7 +24,7 @@ class KiCadPropertySpec(StrEnum):
 def copy_column_with_new_name(column: Column, new_name: str) -> Column:
     """Create a copy of a SQLAlchemy Column with a new name.
     This necessary because SQLAlchemy does not allow to change the name of a column after it has been created.
-    
+
     Args
     ----------
     column: Column
@@ -46,6 +47,7 @@ def copy_column_with_new_name(column: Column, new_name: str) -> Column:
         info=column.info,
     )
 
+
 @dataclass
 class KiCadField:
     """Dataclass to represent a KiCad value.
@@ -62,6 +64,12 @@ class KiCadField:
         Whether to show the name of the field.
     inherit_properties: bool
         Whether to inherit properties from the parent.
+    description: str
+        The description of the field.
+    computed: str
+        The computed value of the field. This is a SQLAlchemy expression that can be used to generate the value of the field.   
+    other_column_options: dict
+        Other options for the column. This is a dictionary that can contain any additional options for the column.
     """
     name: str
     visible_on_add: bool = False
@@ -69,13 +77,14 @@ class KiCadField:
     show_name: bool = False
     inherit_properties: bool = False
     description: str = ''
-    computed: str = None
+    computed: str = ''
     other_column_options: dict = field(default_factory=dict)
+
 
 @dataclass
 class KiCadProperty:
     """Dataclass to represent a KiCad property.
-    
+
     Dataclass Items
     ----------
     which: KiCadPropertySpec
@@ -86,14 +95,17 @@ class KiCadProperty:
     which: KiCadPropertySpec
     description: str = ''
 
+
+"""This type is used to represent a KiCad database column."""
 KiCadDatabaseColumn = Column | KiCadField | KiCadProperty
+
 
 class KiCadTableDefinition:
     """Base class for KiCad table definitions."""
 
-    _registered_tables = []
+    _registered_tables: list[Any] = []
 
-    def __init_subclass__(cls, table: bool = False, **kwargs):
+    def __init_subclass__(cls, table: bool = False, key='key', symbol='symbol', footprint='footprint', computed_vals=field(default_factory=dict), **kwargs):
         super().__init_subclass__(**kwargs)
         if table:
             KiCadTableDefinition._registered_tables.append(cls)
@@ -101,8 +113,7 @@ class KiCadTableDefinition:
     @classmethod
     def get_registered_tables(cls):
         """Get the registered tables."""
-        return cls._registered_tables   
-
+        return cls._registered_tables
 
     @classmethod
     def get_kicad_fields(cls):
@@ -115,7 +126,7 @@ class KiCadTableDefinition:
         return fields
 
     @classmethod
-    def generate_table(cls):
+    def generate_table(cls) -> Table:
         """Generate a SQLAlchemy table definition."""
 
         fields = cls.get_kicad_fields()
@@ -126,19 +137,23 @@ class KiCadTableDefinition:
                 if field.computed:
                     expression = field.computed.format(prefix=cls.prefix)
                     field.other_column_options = {'server_default': expression}
-                columns.append(Column(name, String, comment=field.description, **field.other_column_options))
+                columns.append(
+                    Column(name, String, comment=field.description, **field.other_column_options))
             elif isinstance(field, KiCadProperty):
                 # The type depends on the property. If there is "except" in the name, it is a boolean, otherwise it is a string
                 if field.which in (KiCadPropertySpec.EXCLUDE_FROM_BOM, KiCadPropertySpec.EXCLUDE_FROM_BOARD, KiCadPropertySpec.EXCLUDE_FROM_SIM):
-                    columns.append(Column(name, field.which.value, Boolean, comment=field.description))
+                    columns.append(Column(name, field.which.value,
+                                   Boolean, comment=field.description))
                 else:
-                    columns.append(Column(name, String, comment=field.description))
+                    columns.append(
+                        Column(name, String, comment=field.description))
             elif isinstance(field, Column):
                 # This is already a SQLAlchemy column. I need to adjust the name of the field to the name of the field
 
                 columns.append(copy_column_with_new_name(field, name))
         tab = Table(cls.__name__.lower(), metadata, *columns)
 
-        sql = str(CreateTable(tab).compile(compile_kwargs={"literal_binds": True}))
+        sql = str(CreateTable(tab).compile(
+            compile_kwargs={"literal_binds": True}))
         print(sql)
         return tab

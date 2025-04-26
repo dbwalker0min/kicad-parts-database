@@ -27,7 +27,7 @@ class BaseTable(KiCadTableDefinition, key='part_number'):
     """Base class for KiCad table definitions."""
 
     sequence_number = Column(Integer, autoincrement=True, primary_key=True, index=True,
-                             description="Sequence number of the component")
+                             comment="Sequence number of the component")
 
     # these are fields and propertites that can be transsferred to KiCAD
     part_number = KiCadField('Part Number', visible_in_chooser=True,
@@ -51,12 +51,12 @@ class BaseTable(KiCadTableDefinition, key='part_number'):
 
     # these are fields that are not used in KiCAD, but can be used for other purposes (like BOM generation)
     number_of_pins = Column(Integer, default=None,
-                            description="Number of pins for the component")
-    series = Column(String, default='', description="Series of the component")
+                            comment="Number of pins for the component")
+    series = Column(String, default='', comment="Series of the component")
     manufacturer_name = Column(
-        String, default=None, description="Manufacturer name")
+        String, default=None, comment="Manufacturer name")
     manufacturer_part_number = Column(
-        String, default=None, description="Manufacturer's part number of the component")
+        String, default=None, comment="Manufacturer's part number of the component")
 
 
 class Resistors(BaseTable, table=True, computed_vars={'prefix': 'RES'}):
@@ -66,6 +66,7 @@ class Resistors(BaseTable, table=True, computed_vars={'prefix': 'RES'}):
         'Power', description="Power rating of the resistor in watts")
     tolerance = KiCadField(
         'Tolerance', description="Tolerance of the resistor")
+
 
 class Capacitor(BaseTable, table=True, computed_vars={'prefix': 'CAP'}):
     """
@@ -78,6 +79,7 @@ class Capacitor(BaseTable, table=True, computed_vars={'prefix': 'CAP'}):
     dielectric = KiCadField(
         name="Dielectric", description="Dielectric of the capacitor")
 
+
 class Connector(BaseTable, table=True, computed_vars={'prefix': 'CON'}):
     """
     Connector table definition. Inherits from BaseTable. The value property gives it the name of the connector.
@@ -85,13 +87,16 @@ class Connector(BaseTable, table=True, computed_vars={'prefix': 'CON'}):
     connector_type: str = KiCadField('Type', description="Type of connector")
     pitch: str = KiCadField('Pitch', description="Pitch of the connector")
 
+
 class CrystalOscillator(BaseTable, table=True, computed_vars={'prefix': 'XTL'}):
     """
     Crystal and Oscillator table definition. Inherits from BaseTable. The value property gives the frequency.
     """
-    accuracy: str = KiCadField("Accuracy", description="Accuracy of the crystal or oscillator")
+    accuracy: str = KiCadField(
+        "Accuracy", description="Accuracy of the crystal or oscillator")
     load_capacitance: str = KiCadField("Load Capacitance",
-        dedescription="Load capacitance of the crystal or oscillator")
+                                       description="Load capacitance of the crystal or oscillator")
+
 
 class IC(BaseTable, table=True, computed_vars={'prefix': 'IC'}):
     """
@@ -99,18 +104,23 @@ class IC(BaseTable, table=True, computed_vars={'prefix': 'IC'}):
     """
     ic_type: str = KiCadField('IC Type', description="Type of IC")
 
+
 class Inductor(BaseTable, table=True, computed_vars={'prefix': 'IND'}):
     """
     Inductor table definition. Inherits from BaseTable. The value property gives the inductance.
     """
-    current_rating: str = KiCadField('Current Rating', description="Current rating of the inductor")
-    dc_resistance: str = KiCadField('DC Resistance', description="DC resistance of the inductor")
+    current_rating: str = KiCadField(
+        'Current Rating', description="Current rating of the inductor")
+    dc_resistance: str = KiCadField(
+        'DC Resistance', description="DC resistance of the inductor")
+
 
 class Mechanical(BaseTable, table=True, computed_vars={'prefix': 'MECH'}):
     """
     Mechanical table definition. Inherits from BaseTable. The value property gives the name of the mechanical part.
     """
-    mechanical_type: str = KiCadField('Type', description="Type of mechanical part")
+    mechanical_type: str = KiCadField(
+        'Type', description="Type of mechanical part")
 
 
 class Misc(BaseTable, table=True, computed_vars={'prefix': 'MIS'}):
@@ -124,50 +134,48 @@ class Relay(BaseTable, table=True, computed_vars={'prefix': 'RLY'}):
     """
     Relay table definition. Inherits from BaseTable. The value property gives the part number of the relay.
     """
-    relay_type: str = KiCadField(default=None, description="Type of relay")
+    relay_type: str = KiCadField('Type', description="Type of relay")
     coil_voltage: str = KiCadField(
-        default=None, description="Coil voltage of the relay")
+        'Voltage', description="Coil voltage of the relay")
     contact_rating: str = KiCadField(
-        default=None, description="Contact rating of the relay")
+        'Current', description="Contact rating of the relay")
 
 
 class Switch(BaseTable, table=True, computed_vars={'prefix': 'SW'}):
     """
     Switch table definition. Inherits from BaseTable. The value property gives the name of the switch.
     """
-    switch_type: str = KiCadField(default=None, description="Type of switch")
+    switch_type: str = KiCadField('Type', description="Type of switch")
     current_rating: str = KiCadField(
-        default=None, description="Current rating of the switch")
-    voltage_rating: str = KiCadField(
-        default=None, description="Voltage rating of the switch")
+        'Current', description="Current rating of the switch")
+    voltage_rating: str = KiCadField('Voltage',
+                                     description="Voltage rating of the switch")
 
 
 class Transformer(BaseTable, table=True, computed_vars={'prefix': 'XFR'}):
     """
     Transformer table definition. Inherits from BaseTable. The value property gives the name of the transformer.
     """
-    transformer_type: str = KiCadField(
-        default=None, description="Type of transformer")
-    power_rating: str = KiCadField(
-        default=None, description="Power rating of the transformer")
+    transformer_type: str = KiCadField('Type',
+                                       description="Type of transformer")
+    power_rating: str = KiCadField('Power',
+                                   description="Power rating of the transformer")
 
 
 class Transistor(BaseTable, table=True, computed_vars={'prefix': 'XTR'}):
     """
     Transistor table definition. Inherits from BaseTable. The value property gives the part number of the transistor.
     """
-    transistor_type: str = KiCadField(
-        default=None, description="Type of transistor")
+    transistor_type: str = KiCadField('Type',
+                                      description="Type of transistor")
     current: str = KiCadField(
-        default=None, description="Collector current or drain current of the transistor")
+        'Current', description="Collector current or drain current of the transistor")
     voltage: str = KiCadField(
-        default=None, description="Collector emitter or drain source voltage of the transistor")
-
-    def prefix(self):
-        return "XTR"
+        'Voltage', description="Collector emitter or drain source voltage of the transistor")
 
 
 if __name__ == "__main__":
     tabs = build_tables()
-    engine = create_engine('postgresql+psycopg2://kicad-user:QAiaw8do7NHa4PvDakdR@eplant-eng.info:5432/kicad_part_database', echo=True)
+    engine = create_engine(
+        'postgresql+psycopg2://kicad-user:QAiaw8do7NHa4PvDakdR@eplant-eng.info:5432/kicad_part_database', echo=True)
     metadata.create_all(engine)

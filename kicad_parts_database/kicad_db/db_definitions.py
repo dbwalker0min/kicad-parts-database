@@ -199,6 +199,7 @@ class KiCadTableDefinition:
                 # This is already a SQLAlchemy column. I need to adjust the name of the field to the name of the field
                 columns.append(_copy_column_with_new_name(field, name))
 
+        print(columns)
         return columns
 
     @classmethod
@@ -239,11 +240,14 @@ class KiCadTableDefinition:
         """Get the registered tables."""
         return cls._registered_tables.copy()
     
-    @property
-    def table(self) -> Table:
+    @classmethod
+    def table(cls) -> Table:
         """Get the SQLAlchemy table definition."""
-        return Table(self._table_name, metadata, *self._generate_table_columns(), extend_existing=True)
+        columns = cls._generate_table_columns()
+        print(columns)
+        return Table(cls._table_name, metadata, *columns, extend_existing=True)
 
 def build_tables() -> list[Table]:
     """Build the tables."""
-    return [table.table for table in KiCadTableDefinition._get_registered_tables()]
+    tables = KiCadTableDefinition._get_registered_tables()
+    return [t.table() for t in KiCadTableDefinition._get_registered_tables()]

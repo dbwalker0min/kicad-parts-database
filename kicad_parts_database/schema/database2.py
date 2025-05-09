@@ -176,6 +176,8 @@ class Transistor(BaseTable, table=True, computed_vars={'prefix': 'XTR'}):
 
 if __name__ == "__main__":
     tabs = build_tables()
+    print(tabs[0]._table_columns)
+
     engine = create_engine(
         'postgresql+psycopg2://kicad-user:QAiaw8do7NHa4PvDakdR@eplant-eng.info:5432/kicad_part_database', echo=True)
     metadata.create_all(engine)

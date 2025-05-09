@@ -145,6 +145,7 @@ class KiCadTableDefinition:
     _computed_vars: dict[str, Any] = dict()
     _table_name: str = ''
     _registered_tables: list[Self] = []
+    _table_columns: list[str] = []
 
     def __init_subclass__(cls, table: bool = False, key: str = '', symbol: str = '', footprint: str = '', computed_vars: dict[str, Any] = {}, **kwargs):
         """This method is called when a class is subclassed."""
@@ -159,6 +160,10 @@ class KiCadTableDefinition:
         if footprint:
             cls._footprint_column_name = footprint
         cls._set_computed_vars(computed_vars)
+
+        old_column_names = [c.name for c in cls._table_columns]
+        print(old_column_names)
+        cls._table_columns = [c.name for c in dir(cls) if isinstance(getattr(cls, c), KiCadDatabaseColumn) and c.name not in old_column_names]
 
         # if any parameters are defined, then I intend on building the table
         if table:

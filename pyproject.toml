@@ -3,18 +3,23 @@ name = "kicad-parts-database"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
-    "alembic>=1.15.2",
+    "asyncpg>=0.30.0",
+    "fastapi>=0.116.1",
     "hexdump>=3.3",
-    "psycopg2>=2.9.10",
     "sqlmodel>=0.0.24",
+    "uvicorn[standard]>=0.35.0",
 ]
 
 [tool.uv.workspace]
-members = ["kicad-parts-database"]
+members = [
+    "kicad-parts-database",
+    "kicad_parts_database",
+]
 
 [dependency-groups]
 dev = [
     "alembic>=1.15.2",
+    "pytest>=8.4.1",
 ]

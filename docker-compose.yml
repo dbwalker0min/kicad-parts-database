@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:16
+    container_name: kicad_parts_db
+    environment:
+      POSTGRES_DB: ecad
+      POSTGRES_USER: ecad
+      POSTGRES_PASSWORD: ecadpw
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecad -d ecad"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  bootstrap:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kicad_parts_bootstrap
+    environment:
+      DB_DSN: postgresql+asyncpg://ecad:ecadpw@db:5432/ecad
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src:rw
+      - ./test:/app/test:rw
+      - ./pyproject.toml:/app/pyproject.toml:ro
+      # - ./uv.lock:/app/uv.lock:ro   # if you commit a lockfile
+    command: ["uv", "run", "test/bootstrap_async.py"]
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kicad_parts_api
+    environment:
+      DB_DSN: postgresql+asyncpg://ecad:ecadpw@db:5432/ecad
+    depends_on:
+      db:
+        condition: service_healthy
+      # (Run bootstrap first once; keep api init_db() disabled to avoid redoing it)
+    volumes:
+      - ./src:/app/src:rw
+      - ./pyproject.toml:/app/pyproject.toml:ro
+      # - ./uv.lock:/app/uv.lock:ro
+    command: ["uv", "run", "uvicorn", "src.api.v1.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+
+  appsmith:
+    image: appsmith/appsmith-ce
+    environment:
+      APPSMITH_ENCRYPTION_PASSWORD: somepassword
+      APPSMITH_ENCRYPTION_SALT: somesalt
+      APPSMITH_MAIL_ENABLED: "false"
+    ports:
+      - "8080:80"
+    volumes:
+      - appsmith-stacks:/appsmith-stacks
+    depends_on: [db]
+
+volumes:
+  pgdata:
+  appsmith-stacks:

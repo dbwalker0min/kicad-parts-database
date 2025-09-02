@@ -1,0 +1,3 @@
+[submodule "kicad-parts-database-ui"]
+	path = kicad-parts-database-ui
+	url = git@github.com:dbwalker0min/kicad-parts-database-ui.git
